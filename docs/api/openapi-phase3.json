@@ -1,0 +1,56 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "EduCore ERP API - Phase 3",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/students": {
+      "get": {
+        "summary": "List Students",
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      },
+      "post": {
+        "summary": "Admit Student",
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/v1/sync/rosters": {
+      "get": {
+        "summary": "Roster Delta Sync",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/v1/files/{id}/url": {
+      "get": {
+        "summary": "Get Signed URL",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "403": { "description": "Pending Scan or Forbidden" },
+          "404": { "description": "Not Found" }
+        }
+      }
+    }
+  }
+}

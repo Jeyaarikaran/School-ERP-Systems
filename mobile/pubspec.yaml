@@ -1,0 +1,49 @@
+name: educore_mobile
+description: "EduCore ERP Mobile Application for Parents and Teachers"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management & DI
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+  
+  # Networking
+  dio: ^5.4.3+1
+  
+  # Offline Storage (SQLite)
+  drift: ^2.16.0
+  sqlite3_flutter_libs: ^0.5.21
+  path_provider: ^2.1.2
+  path: ^1.9.0
+  
+  # Navigation
+  go_router: ^13.2.0
+  
+  # Data Serialization
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+
+  # UI / UX
+  flutter_svg: ^2.0.10
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  # Code Generation
+  build_runner: ^2.4.8
+  freezed: ^2.4.7
+  json_serializable: ^4.8.1
+  drift_dev: ^2.16.0
+  riverpod_generator: ^2.3.11
+
+flutter:
+  uses-material-design: true

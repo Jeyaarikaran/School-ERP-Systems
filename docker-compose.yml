@@ -1,0 +1,116 @@
+services:
+  # ==========================================
+  # 1. Databases & Infrastructure
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: educore_postgres
+    environment:
+      POSTGRES_USER: erp_owner
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: educore_erp
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U erp_owner -d educore_erp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: educore_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: educore_s3
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - miniodata:/data
+
+  # ==========================================
+  # 2. Backend (FastAPI + Celery)
+  # ==========================================
+  api:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: educore_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://erp_owner:supersecretpassword@postgres:5432/educore_erp
+      - REDIS_URL=redis://redis:6379/1
+      - S3_ENDPOINT_URL=http://minio:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  celery_worker:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: educore_celery_worker
+    command: celery -A app.core.celery_app worker --loglevel=info -Q critical,notifications,reports,imports
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://erp_owner:supersecretpassword@postgres:5432/educore_erp
+      - REDIS_URL=redis://redis:6379/1
+    depends_on:
+      - redis
+      - postgres
+
+  celery_beat:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: educore_celery_beat
+    command: celery -A app.core.celery_app beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    environment:
+      - REDIS_URL=redis://redis:6379/1
+    depends_on:
+      - redis
+
+  # ==========================================
+  # 3. Frontend (Next.js Admin)
+  # ==========================================
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: educore_admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./admin:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:

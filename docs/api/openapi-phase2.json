@@ -1,0 +1,77 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "EduCore ERP API - Phase 2",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "school_code": { "type": "string" },
+                  "identifier": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK or Requires 2FA" },
+          "401": { "description": "Unauthorized" },
+          "429": { "description": "Too Many Requests" }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "summary": "Refresh Token",
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Get Profile",
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "summary": "List Users",
+        "responses": {
+          "200": { "description": "OK" },
+          "403": { "description": "Forbidden" }
+        }
+      },
+      "post": {
+        "summary": "Create User",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "409": { "description": "Request In Progress" },
+          "422": { "description": "Idempotency Key Reused or Validation Error" }
+        }
+      }
+    }
+  }
+}
